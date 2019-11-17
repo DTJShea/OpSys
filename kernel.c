@@ -2,6 +2,7 @@ void printString(char*);
 void printChar(char);
 void readString(char*);
 void readSector(char*, int);
+void readFile(char*, char*, int*);
 void handleInterrupt21(int ax, int bx, int cx, int dx);
 
 void main(){
@@ -69,6 +70,35 @@ void printString(char* chars){
 		}
 	}
 }
+
+void readFile(char* filename, char* buffer, int* numsec){
+        char dir[512];
+        int dirsect=2;
+        int fileEntry;
+        readSector(dir, dirsect);
+
+        *numsec=0;
+
+        for(fileEntry=0; fileEntry<512; fileEntry+=32){
+
+                if(filename[0] == dir[fileEntry+0] && filename[1] == dir[fileEntry+1] && filename[2] == dir[fileEntry+2] && filename[3] == dir[fileEntry+3] && filename[4] == dir[fileEntry+4] && filename[5] == dir[fileEntry+5]){
+                        int i;
+                        for(i=0; i<26; i++){
+                                if(dir[fileEntry+6+i]=='\0'){
+                                        break;
+                                }
+                                readSector(buffer, dir[fileEntry+6+i]);
+                                *numsec = *numsec + 1;
+                                buffer+=512;
+				//printChar('k');
+                        }
+                        break;
+                }
+			//printChar('L');
+        }
+
+}
+
 
 void handleInterrupt21(int ax, int bx, int cx, int dx){
 	printString("Handling Interrupt21");
