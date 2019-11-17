@@ -1,0 +1,2 @@
+
+If this message prints out, then your readFile function is working correctly!
