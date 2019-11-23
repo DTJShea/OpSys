@@ -3,23 +3,25 @@ void printChar(char);
 void readString(char*);
 void readSector(char*, int);
 void readFile(char*, char*, int*);
+void executeProgram(char*);
 void handleInterrupt21(int ax, int bx, int cx, int dx);
 
 void main(){
 
-	char* test[512];
-	readString(test);
-	readSector(test, 30);
-	printString(test);
-	makeInterrupt21();
-	interrupt(0x21,0,0,0,0);
+	//char* test[512];
+	//readString(test);
+	//readSector(test, 30);
+	//printString(test);
+	//makeInterrupt21();
+	//interrupt(0x21,0,0,0,0);
 
 	//Tests	
-	char line[80];
-	makeInterrupt21();
-	interrupt(0x21,1,line,0,0);
-	interrupt(0x21,0,line,0,0);
-
+	//char line[80];
+	//makeInterrupt21();
+	//interrupt(0x21,1,line,0,0);
+	//interrupt(0x21,0,line,0,0);
+	makeInterrupt21();	
+	interrupt(0x21, 4, "tstpr1", 0, 0);
 
 	while(1){}
 
@@ -61,9 +63,10 @@ void readString(char* readChar){
 
 void printString(char* chars){
 	int counter=0;
+	char toPrint;
 	while(1){
-		char toPrint=chars[counter];
-		interrupt(0x10, 0xe*256+toPrint, 0, 0, 0);
+		toPrint = chars[counter];
+		interrupt(0x10, 0xe*256 + toPrint, 0, 0, 0);
 		counter++;
 		if(toPrint==0x0){
 			break;
@@ -99,6 +102,18 @@ void readFile(char* filename, char* buffer, int* numsec){
 
 }
 
+void executeProgram(char* name){
+	char* buffer[13312];
+	int sectorsRead;
+	int count;
+	readFile(name, buffer, &sectorsRead);
+	while(sectorsRead > 0){
+		putInMemory(0x20, &sectorsRead, buffer);
+		sectorsRead--;
+	}
+	launchProgram(0x20);	
+}
+
 
 void handleInterrupt21(int ax, int bx, int cx, int dx){
 	printString("Handling Interrupt21");
@@ -111,7 +126,10 @@ void handleInterrupt21(int ax, int bx, int cx, int dx){
 	if(ax == 2){ //Read Sector
 		readSector(bx, cx);
 	}
-	if(ax >= 3){ //Error
-		printString("ERROR, AX IS 3 OR HIGHER")
+	if(ax == 3){ //Error
+		printString("ERROR");
+	}
+	if(ax == 4){ //execute program
+		executeProgram(bx);
 	}
 }
