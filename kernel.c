@@ -4,6 +4,7 @@ void readString(char*);
 void readSector(char*, int);
 void readFile(char*, char*, int*);
 void executeProgram(char*);
+void terminateProgram();
 void deleteFile (char*);
 void handleInterrupt21(int ax, int bx, int cx, int dx);
 
