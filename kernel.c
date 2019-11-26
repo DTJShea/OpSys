@@ -22,7 +22,7 @@ void main(){
 	//interrupt(0x21,1,line,0,0);
 	//interrupt(0x21,0,line,0,0);
 	makeInterrupt21();	
-	interrupt(0x21, 4, "tstpr1", 0, 0);
+	interrupt(0x21, 5, "tstpr2", 0, 0);
 
 	while(1){}
 
@@ -115,6 +115,10 @@ void executeProgram(char* name){
 	launchProgram(0x20);	
 }
 
+void terminateProgram(){
+	while(1){}
+}
+
 void deleteFile(char* name){
 	char map[512];
 	char directory[512];
@@ -180,6 +184,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx){
 	}
 	if(ax == 4){ //execute program
 		executeProgram(bx);
+	}
+	if(ax == 5){ //Terminate Program
+		terminateProgram(bx);
 	}
 	if(ax == 7){
 		DeleteFile(bx);
