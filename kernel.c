@@ -4,6 +4,7 @@ void readString(char*);
 void readSector(char*, int);
 void readFile(char*, char*, int*);
 void executeProgram(char*);
+void deleteFile (char*);
 void handleInterrupt21(int ax, int bx, int cx, int dx);
 
 void main(){
@@ -114,6 +115,54 @@ void executeProgram(char* name){
 	launchProgram(0x20);	
 }
 
+void deleteFile(char* name){
+	char map[512];
+	char directory[512];
+	char compareFile[7];
+	int file,begin,end,k;
+	int j;
+	int x;
+	
+	// 1. Load the Directory and Map to 512 byte character arrays.
+	readSector(map,1);
+	readSector(directory,2);
+
+	//2. Search through the directory and try to find the file name.
+	for (file = 0; file < 16; file++) {
+    		begin = file * 32;
+    		end = begin + 6;
+    			k = 0;
+        			for (j = begin; j < end; j++) 
+        			{
+        			compareFile[k] = directory[j];
+       	 		k++;
+        }
+        compareFile[6]='\0';    
+
+	//3. Set the first byte of the file name to 0x00.
+              if (Match(compareFile, name, 6)) {
+              		directory[begin]=0x0;
+
+
+	/*4.Step through the sectors numbers listed as belonging to the file.  
+	For each sector, set the corresponding Map byte to 0.  
+	For example, if sector 7 belongs to the file, set the 7th Map byte to 0 
+	[however you should set the 8th, since the Map starts at sector 0].*/
+
+
+              for (x = end ; directory[x] != 0x0; x++){ 
+              		int correspondingMap = directory[x];
+					map[correspondingMap] = 0x00;
+              }
+        }
+    }
+	//5. Write the character arrays holding the Directory and Map back to their
+	//appropriate sectors.
+	writeSector (directory, 2);
+	writeSector (map,1);
+}
+
+
 
 void handleInterrupt21(int ax, int bx, int cx, int dx){
 	printString("Handling Interrupt21");
@@ -132,4 +181,8 @@ void handleInterrupt21(int ax, int bx, int cx, int dx){
 	if(ax == 4){ //execute program
 		executeProgram(bx);
 	}
+	if(ax == 7){
+		DeleteFile(bx);
+	}
 }
+
