@@ -5,7 +5,7 @@ void readSector(char*, int);
 void readFile(char*, char*, int*);
 void executeProgram(char*);
 void terminateProgram();
-void deleteFile (char*);
+//void deleteFile (char*);
 void handleInterrupt21(int ax, int bx, int cx, int dx);
 
 void main(){
@@ -23,7 +23,7 @@ void main(){
 	//interrupt(0x21,1,line,0,0);
 	//interrupt(0x21,0,line,0,0);
 	makeInterrupt21();	
-	interrupt(0x21, 5, "tstpr2", 0, 0);
+	interrupt(0x21, 4, "shell", 0, 0);
 
 	while(1){}
 
@@ -42,7 +42,7 @@ void printChar(char c){
 void readString(char* readChar){
 	int count = 0;
 	while (1){
-		readChar[count] = interrupt(0x16, 0xe*256+toPrint, 0, 0, 0);
+		readChar[count] = interrupt(0x16, 0, 0, 0, 0);
 		if(readChar[count] == 0xd){
 			interrupt(0x10, 0xe*256+0xa,0,0,0);
 			interrupt(0x10, 0xe*256+0xd,0,0,0);
@@ -105,22 +105,41 @@ void readFile(char* filename, char* buffer, int* numsec){
 }
 
 void executeProgram(char* name){
-	char* buffer[13312];
+	char buffer[13312];
 	int sectorsRead;
 	int count;
 	readFile(name, buffer, &sectorsRead);
-	while(sectorsRead > 0){
-		putInMemory(0x20, &sectorsRead, buffer);
-		sectorsRead--;
+	
+	if(sectorsRead == 0){
+		while(1);
 	}
-	launchProgram(0x20);	
+	else{
+
+		for(count = 0x0; count < sectorsRead*512; count++){
+			putInMemory(0x2000, count, buffer[count]);
+//                      printChar('X');
+		}
+	}
+//      printChar('Y');
+	launchProgram(0x2000);
+	printChar('Z');
+
 }
 
 void terminateProgram(){
-	while(1){}
+	char shellname[6];
+
+	shellname[0]='s';
+	shellname[1]='h';
+	shellname[2]='e';
+	shellname[3]='l';
+	shellname[4]='l';
+	shellname[5]='\0';
+
+	executeProgram(shellname);
 }
 
-void deleteFile(char* name){
+/*void deleteFile(char* name){
 	char map[512];
 	char directory[512];
 	char compareFile[7];
@@ -152,7 +171,7 @@ void deleteFile(char* name){
 	/*4.Step through the sectors numbers listed as belonging to the file.  
 	For each sector, set the corresponding Map byte to 0.  
 	For example, if sector 7 belongs to the file, set the 7th Map byte to 0 
-	[however you should set the 8th, since the Map starts at sector 0].*/
+	[however you should set the 8th, since the Map starts at sector 0].*
 
 
               for (x = end ; directory[x] != 0x0; x++){ 
@@ -166,11 +185,11 @@ void deleteFile(char* name){
 	writeSector (directory, 2);
 	writeSector (map,1);
 }
-
+*/
 
 
 void handleInterrupt21(int ax, int bx, int cx, int dx){
-	printString("Handling Interrupt21");
+	
 	if(ax == 0){ //Print String
 		printString(bx);
 	}
@@ -180,17 +199,17 @@ void handleInterrupt21(int ax, int bx, int cx, int dx){
 	if(ax == 2){ //Read Sector
 		readSector(bx, cx);
 	}
-	if(ax == 3){ //Error
-		printString("ERROR");
+	if(ax == 3){ //Read File
+		readFile(bx, cx, dx);
 	}
 	if(ax == 4){ //execute program
 		executeProgram(bx);
 	}
 	if(ax == 5){ //Terminate Program
-		terminateProgram(bx);
+		terminateProgram();
 	}
-	if(ax == 7){
+/*	if(ax == 7){
 		DeleteFile(bx);
-	}
+	}*/
 }
 
