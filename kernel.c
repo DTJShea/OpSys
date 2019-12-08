@@ -139,6 +139,10 @@ void terminateProgram(){
 	executeProgram(shellname);
 }
 
+void writeSector(char* buffer, int sector){
+	interrupt(0x13, 3*256+1, buffer,0*256+sector+1, 0*256+0x80);
+}
+
 /*void deleteFile(char* name){
 	char map[512];
 	char directory[512];
@@ -208,6 +212,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx){
 	if(ax == 5){ //Terminate Program
 		terminateProgram();
 	}
+	if(ax == 6){ //Write Sector
+		writeSector(bx, cx);
+	}	
 /*	if(ax == 7){
 		DeleteFile(bx);
 	}*/
