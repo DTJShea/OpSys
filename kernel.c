@@ -5,8 +5,10 @@ void readSector(char*, int);
 void readFile(char*, char*, int*);
 void executeProgram(char*);
 void terminateProgram();
-//void deleteFile (char*);
+void deleteFile (char*);
 void handleInterrupt21(int ax, int bx, int cx, int dx);
+void writeSector(char*, int);
+void writeFile(char*, char*, int);
 
 void main(){
 
@@ -22,7 +24,10 @@ void main(){
 	//makeInterrupt21();
 	//interrupt(0x21,1,line,0,0);
 	//interrupt(0x21,0,line,0,0);
-	makeInterrupt21();	
+
+	makeInterrupt21();
+	
+	interrupt(0x21,8,"this is a test message","testmg",3);
 	interrupt(0x21, 4, "shell", 0, 0);
 
 	while(1){}
@@ -76,6 +81,57 @@ void printString(char* chars){
 	}
 }
 
+void writeFile(char* buffer, char* filename, int numberOfSectors){
+	char dir[512];
+	char map[512];
+	int i;
+	int k;
+	int j;
+	int fileEntry;
+
+	readSector(dir, 2);
+	readSector(map, 1);
+
+//	printChar('B');
+	for(i=0; i<512; i+=32){
+//		printChar('Q');
+		if(dir[i] == '\0'){
+//			printChar('X');
+			dir[i]=filename[0];
+			dir[i+1]=filename[1];
+			dir[i+2]=filename[2];
+			dir[i+3]=filename[3];
+			dir[i+4]=filename[4];
+			dir[i+5]=filename[5];
+			for(fileEntry=6; fileEntry<32; fileEntry++){
+				dir[i+fileEntry]=0;
+//				printChar('Y');
+			}
+			for(k=0; k<numberOfSectors; k++){
+//				printChar('F');
+				for(j=3; j<512; j++){
+					if(map[j] == '\0'){
+						map[j]=0xFF;
+						dir[i+6+k]=j;
+						writeSector(buffer, j);
+						writeSector(dir, 2);
+						writeSector(map, 1);
+//						printChar('Z');
+						break;
+					}
+				}
+			}
+//			fileEntry=i;
+//			printChar('A');
+			
+		}
+//	printChar('R');
+	
+	}
+
+	return;
+}
+
 void readFile(char* filename, char* buffer, int* numsec){
         char dir[512];
         int dirsect=2;
@@ -111,7 +167,7 @@ void executeProgram(char* name){
 	readFile(name, buffer, &sectorsRead);
 	
 	if(sectorsRead == 0){
-		while(1);
+		return;
 	}
 	else{
 
@@ -143,7 +199,7 @@ void writeSector(char* buffer, int sector){
 	interrupt(0x13, 3*256+1, buffer,0*256+sector+1, 0*256+0x80);
 }
 
-/*void deleteFile(char* name){
+void deleteFile(char* name){
 	char map[512];
 	char directory[512];
 	char compareFile[7];
@@ -175,7 +231,7 @@ void writeSector(char* buffer, int sector){
 	/*4.Step through the sectors numbers listed as belonging to the file.  
 	For each sector, set the corresponding Map byte to 0.  
 	For example, if sector 7 belongs to the file, set the 7th Map byte to 0 
-	[however you should set the 8th, since the Map starts at sector 0].*
+	[however you should set the 8th, since the Map starts at sector 0].*/
 
 
               for (x = end ; directory[x] != 0x0; x++){ 
@@ -189,7 +245,7 @@ void writeSector(char* buffer, int sector){
 	writeSector (directory, 2);
 	writeSector (map,1);
 }
-*/
+
 
 
 void handleInterrupt21(int ax, int bx, int cx, int dx){
@@ -215,8 +271,11 @@ void handleInterrupt21(int ax, int bx, int cx, int dx){
 	if(ax == 6){ //Write Sector
 		writeSector(bx, cx);
 	}	
-/*	if(ax == 7){
+	if(ax == 7){
 		DeleteFile(bx);
-	}*/
+	}
+	if(ax == 8){ //Write File
+		writeFile(bx, cx, dx);
+	}
 }
 
