@@ -5,29 +5,17 @@ void readSector(char*, int);
 void readFile(char*, char*, int*);
 void executeProgram(char*);
 void terminateProgram();
-void deleteFile (char*);
+//void DeleteFile (char*);
 void handleInterrupt21(int ax, int bx, int cx, int dx);
 void writeSector(char*, int);
 void writeFile(char*, char*, int);
+void handleTimerInterrupt(int segment, int sp);
 
 void main(){
 
-	//char* test[512];
-	//readString(test);
-	//readSector(test, 30);
-	//printString(test);
-	//makeInterrupt21();
-	//interrupt(0x21,0,0,0,0);
-
-	//Tests	
-	//char line[80];
-	//makeInterrupt21();
-	//interrupt(0x21,1,line,0,0);
-	//interrupt(0x21,0,line,0,0);
-
-	makeInterrupt21();
-	
+	makeInterrupt21();	
 	interrupt(0x21,8,"this is a test message","testmg",3);
+	//makeTimerInterrupt();
 	interrupt(0x21, 4, "shell", 0, 0);
 
 	while(1){}
@@ -198,8 +186,8 @@ void terminateProgram(){
 void writeSector(char* buffer, int sector){
 	interrupt(0x13, 3*256+1, buffer,0*256+sector+1, 0*256+0x80);
 }
-
-void deleteFile(char* name){
+/*
+void DeleteFile(char* name){
 	char map[512];
 	char directory[512];
 	char compareFile[7];
@@ -226,13 +214,13 @@ void deleteFile(char* name){
 	//3. Set the first byte of the file name to 0x00.
               if (Match(compareFile, name, 6)) {
               		directory[begin]=0x0;
-
+*/
 
 	/*4.Step through the sectors numbers listed as belonging to the file.  
 	For each sector, set the corresponding Map byte to 0.  
 	For example, if sector 7 belongs to the file, set the 7th Map byte to 0 
 	[however you should set the 8th, since the Map starts at sector 0].*/
-
+/*
 
               for (x = end ; directory[x] != 0x0; x++){ 
               		int correspondingMap = directory[x];
@@ -244,9 +232,15 @@ void deleteFile(char* name){
 	//appropriate sectors.
 	writeSector (directory, 2);
 	writeSector (map,1);
+}*/
+
+void handleTimerInterrupt(int segment, int sp){
+	printChar("T");
+	printChar("i");
+	printChar("c");
+	printChar("\n");
+	returnFromTimer(segment, sp);
 }
-
-
 
 void handleInterrupt21(int ax, int bx, int cx, int dx){
 	
@@ -271,9 +265,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx){
 	if(ax == 6){ //Write Sector
 		writeSector(bx, cx);
 	}	
-	if(ax == 7){
+	/*if(ax == 7){ //Delete File
 		DeleteFile(bx);
-	}
+	}*/
 	if(ax == 8){ //Write File
 		writeFile(bx, cx, dx);
 	}

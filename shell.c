@@ -41,7 +41,7 @@ main(){
 		//dir
 		else if(command[0]=='d' && command[1]=='i' && command[2]=='r'){
 			for(i=0; i<1000; i++){
-				syscall(2, buffer, i);
+				syscall(3, buffer, i);
 				if(buffer[0] != '\0'){
 					syscall(0, buffer);
 				}
@@ -50,12 +50,7 @@ main(){
 		}
 		//copy
                /* else if(command[0] == 'c' && command[1] == 'o' && command[2] == 'p' && command[3] == 'y'){
-			syscall(3, filename, buffer, 0);
-			if(buffer){
-				syscall(0, buffer);
-			}else{
-				syscall(0, "FILE NOT FOUND");
-			}
+
 		}
                 else{
                         syscall(0, "NOT A COMMAND\r\n");
