@@ -40,9 +40,12 @@ main(){
 		}
 		//dir
 		else if(command[0]=='d' && command[1]=='i' && command[2]=='r'){
-			for(i=0; i<1000; i++){
-				syscall(3, buffer, i);
+			for(i=0; i<1000; i = i + 32){
+				syscall(2, buffer, 2);
 				if(buffer[0] != '\0'){
+					for(k=0; k<6; k++){
+						filename[k] = buffer[k];
+					}
 					syscall(0, buffer);
 				}
 			}

@@ -15,7 +15,7 @@ void main(){
 
 	makeInterrupt21();	
 	interrupt(0x21,8,"this is a test message","testmg",3);
-	//makeTimerInterrupt();
+	makeTimerInterrupt();
 	interrupt(0x21, 4, "shell", 0, 0);
 
 	while(1){}
@@ -235,10 +235,10 @@ void DeleteFile(char* name){
 }*/
 
 void handleTimerInterrupt(int segment, int sp){
-	printChar("T");
-	printChar("i");
-	printChar("c");
-	printChar("\n");
+	printChar('T');
+	printChar('i');
+	printChar('c');
+	printChar('\n');
 	returnFromTimer(segment, sp);
 }
 
